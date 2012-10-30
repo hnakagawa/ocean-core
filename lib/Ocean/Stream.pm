@@ -249,6 +249,14 @@ sub on_io_received_disco_items_request {
     $self->[PROTOCOL]->on_client_received_disco_items_request($req);
 }
 
+sub on_io_received_pubsub_publish {
+    my ($self, $req) = @_;
+
+    infof('<Stream:JSONRPC> @pubsub_publish');
+
+    $self->[PROTOCOL]->on_client_received_pubsub_publish($req);
+}
+
 sub on_io_received_room_message {
     my ($self, $message) = @_;
     $self->[PROTOCOL]->on_client_received_room_message($message);
@@ -441,6 +449,14 @@ sub on_protocol_delivered_disco_items {
 
     $self->[CLIENT_IO]->on_protocol_delivered_disco_items(
         $self->bound_jid, $items);
+}
+
+sub on_protocol_handle_pubsub_publish {
+    my ($self, $event) = @_;
+
+    $self->[SERVER]->on_stream_handle_pubsub_publish($event);
+
+    $self->[CLIENT_IO]->on_protocol_delivered_pubsub_publish($event);
 }
 
 sub on_protocol_delivered_room_invitation {

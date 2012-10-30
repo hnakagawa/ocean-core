@@ -3,6 +3,8 @@ package Ocean::Error;
 use strict;
 use warnings;
 
+use Ocean::Constants::JSONRPC;
+
 use overload  
     q{""}    => sub { $_[0]->as_string },
     fallback => 1;
@@ -72,6 +74,38 @@ our @ISA = qw(Ocean::Error);
 
 package Ocean::Error::ConditionMismatchedServerEvent;
 our @ISA = qw(Ocean::Error);
+
+package Ocean::Error::JSONRPCError;
+our @ISA = qw(Ocean::Error);
+
+package Ocean::Error::JSONRPCError::ParseError;
+our @ISA = qw(Ocean::Error::JSONRPCError);
+sub type    { Ocean::Constants::JSONRPC::PARSE_ERROR }
+sub message { 'Parse error' }
+
+package Ocean::Error::JSONRPCError::InvalidRequest;
+our @ISA = qw(Ocean::Error::JSONRPCError);
+sub type    { Ocean::Constants::JSONRPC::INVALID_REQUEST }
+sub message { 'Invalid Request' }
+
+package Ocean::Error::JSONRPCError::MethodNotFound;
+our @ISA = qw(Ocean::Error::JSONRPCError);
+sub type    { Ocean::Constants::JSONRPC::METHOD_NOT_FOUND }
+sub message { 'Method not found' }
+
+package Ocean::Error::JSONRPCError::InvalidParams;
+our @ISA = qw(Ocean::Error::JSONRPCError);
+sub type    { Ocean::Constants::JSONRPC::INVALID_PARAMS }
+sub message { 'Invalid params' }
+
+package Ocean::Error::JSONRPCError::InternalError;
+our @ISA = qw(Ocean::Error::JSONRPCError);
+sub type    { Ocean::Constants::JSONRPC::INTERNAL_ERROR }
+sub message { 'Internal error' }
+
+package Ocean::Error::JSONRPCError::ServerError;
+our @ISA = qw(Ocean::Error::JSONRPCError);
+
 
 1;
 

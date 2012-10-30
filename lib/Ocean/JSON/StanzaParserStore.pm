@@ -13,6 +13,7 @@ use Ocean::JSON::StanzaParser::Session;
 use Ocean::JSON::StanzaParser::RosterRequest;
 use Ocean::JSON::StanzaParser::vCardRequest;
 use Ocean::JSON::StanzaParser::Ping;
+use Ocean::JSON::StanzaParser::PubSubEvent;
 use Ocean::JSON::StanzaParser::SASLAuth;
 
 my %PARSER_STORE = ();
@@ -70,6 +71,12 @@ __PACKAGE__->register_parser(
 __PACKAGE__->register_parser(
     Ocean::Constants::EventType::PING,
     Ocean::JSON::StanzaParser::Ping->new,
+);
+
+# XXX may be better to move somwhere else
+__PACKAGE__->register_parser(
+    Ocean::Constants::EventType::PUBLISH_EVENT,
+    Ocean::JSON::StanzaParser::PubSubEvent->new,
 );
 
 1;

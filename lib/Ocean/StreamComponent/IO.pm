@@ -70,6 +70,10 @@ sub _handle_client_event_error {
         });
         $self->[ENCODER]->send_message_error($delivery_request);
     }
+    elsif ($error->isa("Ocean::Error::JSONRPCError")) {
+        debugf(q{<Stream> JSONRPCError: %s (%s)}, $error->message, $error->type);
+        return $self->close_with_ending_stream($error->type, $error->message);
+    }
     elsif ($error->isa('Ocean::Error::IQError')) {
         my $delivery_request = Ocean::Stanza::DeliveryRequest::IQError->new({
             id           => $error->id,
@@ -164,6 +168,11 @@ sub on_received_disco_info_request {
 sub on_received_disco_items_request {
     my ($self, $req) = @_;
     $self->[STREAM]->on_io_received_disco_items_request($req);
+}
+
+sub on_received_pubsub_publish {
+    my ($self, $req) = @_;
+    $self->[STREAM]->on_io_received_pubsub_publish($req);
 }
 
 sub on_received_room_message {
@@ -381,6 +390,13 @@ sub on_protocol_delivered_unavailable_presence {
     );
 }
 
+sub on_protocol_delivered_pubsub_publish {
+    my ($self, $event) = @_;
+    return if $self->[IS_CLOSING];
+    $self->[ENCODER]->send_delivered_pubsub_response($event);
+    $self->close();
+}
+
 sub on_protocol_delivered_pubsub_event {
     my ($self, $event) = @_;
     return if $self->[IS_CLOSING];
@@ -541,7 +557,7 @@ sub close_with_ending_stream {
         $self->[ENCODER]->send_end_of_stream();
         $self->close();
     } catch {
-        critf("<Stream> caught exception while closing stream");
+        critf("<Stream> caught exception while closing stream: " . $_);
     };
 }
 

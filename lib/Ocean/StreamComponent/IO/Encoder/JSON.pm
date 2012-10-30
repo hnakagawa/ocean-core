@@ -100,7 +100,6 @@ sub send_initial_stream {
 
 sub send_end_of_stream {
     my $self = shift;
-    # closing handshake
 }
 
 =pod

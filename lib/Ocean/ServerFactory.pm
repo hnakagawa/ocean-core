@@ -54,6 +54,7 @@ my %COMPONENT_FACTORY_MAP = (
     'http-websocket' => 'Ocean::ServerComponentFactory::HTTPBinding::WebSocket',
     'http-sse'       => 'Ocean::ServerComponentFactory::HTTPBinding::SSE',
     'http-xhr'       => 'Ocean::ServerComponentFactory::HTTPBinding::XHR',
+    'http-jsonrpc'   => 'Ocean::ServerComponentFactory::HTTPBinding::JSONRPC',
 );
 
 sub _create_server_component_factory {

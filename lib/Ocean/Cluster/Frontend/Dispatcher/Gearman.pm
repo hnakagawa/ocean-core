@@ -46,7 +46,7 @@ sub dispatch {
     my $queue_name = $params{queue_name};
     my $data       = $params{data};
 
-    debugf('<Handler> @dispatch { broker_id: %s, queue_name: %s }', $broker_id, $queue_name);
+    debugf('<Handler> @dispatch { broker_id: %s, queue_name: %s, data: %s }', $broker_id, $queue_name, $data);
 
     my $client = $self->_get_broker_client($broker_id);
     unless ($client) {

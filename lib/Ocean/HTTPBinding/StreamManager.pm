@@ -170,6 +170,11 @@ sub on_stream_handle_message {
         $sender_id, $message);
 }
 
+sub on_stream_handle_pubsub_publish {
+    my ($self, $event) = @_;
+    $self->{_server}->on_stream_handle_pubsub_publish($event);
+}
+
 sub on_stream_handle_presence {
     my ($self, $sender_id, $presence) = @_;
     $self->{_server}->on_stream_handle_presence(

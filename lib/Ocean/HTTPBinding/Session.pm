@@ -244,6 +244,12 @@ sub on_stream_handle_message {
     # - or let developer support message-sync with HTML5 WebStorage(sessionStorage)
 }
 
+sub on_stream_handle_pubsub_event {
+    my ($self, $event) = @_;
+    # not supported
+    Ocean::Error::ProtocolError->throw;
+}
+
 sub on_stream_handle_presence {
     my ($self, $sender_id, $presence) = @_;
 

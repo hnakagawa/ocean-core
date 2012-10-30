@@ -11,11 +11,13 @@ use Log::Minimal;
 
 use Ocean::Error;
 use Ocean::Constants::EventType;
+use Ocean::Constants::JSONRPC;
 use Ocean::Constants::StanzaErrorType;
 use Ocean::Constants::StanzaErrorCondition;
 use Ocean::Constants::StreamErrorType;
 use Ocean::Constants::WebSocketOpcode;
 
+use Ocean::JSON::JSONRPCClassifier;
 use Ocean::JSON::StanzaClassifier;
 use Ocean::JSON::StanzaParserStore;
 
@@ -72,6 +74,10 @@ sub _handle_frame {
         # handle as ping packet?
         # or ignore?
     }
+    elsif ($op == Ocean::Constants::JSONRPC::RPC_CALL) {
+        debugf("<Stream> <Decoder> Got jsonrpc call");
+        $self->_handle_packet($message, '_handle_jsonrpc');   
+    }
     else {
         debugf("<Stream> <Decoder> Opcode is for unsupported frame");
         # unsupported frame type
@@ -81,8 +87,10 @@ sub _handle_frame {
 }
 
 sub _handle_packet {
-    my ($self, $json) = @_;
+    my ($self, $json, $handler) = @_;
     my $obj;
+
+    my $json_handler = $handler || '_handle_json';
     debugf("<Stream> <Decoder> try to parse json, '%s'", $json);
     try {
         $obj = $self->[JSON]->decode($json);
@@ -94,7 +102,7 @@ sub _handle_packet {
                 q{Failed to parse json}, 
         );
     };
-    $self->_handle_json($obj);
+    $self->$json_handler($obj);
 }
 
 sub _handle_json {
@@ -104,6 +112,18 @@ sub _handle_json {
     return unless $event_type;
 
     $self->_dispatch_event($event_type, $obj);
+}
+
+sub _handle_jsonrpc {
+    my ($self, $obj) = @_;
+
+    my $event_type = Ocean::JSON::JSONRPCClassifier->classify($obj);
+    unless ($event_type) {
+        Ocean::Error::JSONRPCError::MethodNotFound->throw();
+        return;
+    }
+
+    $self->_dispatch_jsonrpc_event($event_type, $obj);
 }
 
 sub _get_parser {
@@ -141,9 +161,19 @@ my %STANZA_METHOD_MAP = (
         q{on_received_disco_items_request},
 );
 
+my %JSONRPC_METHOD_MAP = (
+    Ocean::Constants::EventType::PUBLISH_EVENT,
+        q{on_received_pubsub_publish},
+);
+
 sub _stanza_method_map {
     my $self = shift;
     return \%STANZA_METHOD_MAP;
+}
+
+sub _jsonrpc_method_map {
+    my $self = shift;
+    return \%JSONRPC_METHOD_MAP;
 }
 
 sub _dispatch_event {
@@ -167,6 +197,24 @@ sub _dispatch_event {
         $self->[DELEGATE]->$event_method();
     }
 }
+
+sub _dispatch_jsonrpc_event {
+    my ($self, $event_type, $obj) = @_;
+
+    debugf('<Stream> <Decoder> jsonrpc event: @%s', $event_type);
+
+    my $event_method = $self->_jsonrpc_method_map->{ $event_type };
+    unless ($event_method) {
+        warnf('<Stream> <Decoder> unknown jsonrpc-event-type: %s', $event_type);
+        return;
+    }
+
+    my $parser = $self->_get_parser($event_type);
+    my $stanza = $parser->parse($obj);
+
+    $self->[DELEGATE]->$event_method($stanza);
+}
+
 
 sub initialize {
     my $self = shift;

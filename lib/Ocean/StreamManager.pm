@@ -174,6 +174,13 @@ sub on_stream_handle_message {
     );
 }
 
+sub on_stream_handle_pubsub_event {
+    my ($self, $event) = @_;
+    Ocean::Error::AbstractMethod->throw(
+        message => q{Ocean::StreamManager::on_stream_handle_pubsub_event}, 
+    );
+}
+
 sub on_stream_handle_presence {
     my ($self, $sender_id, $presence) = @_;
     Ocean::Error::AbstractMethod->throw(

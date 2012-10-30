@@ -181,6 +181,13 @@ sub on_client_received_disco_items_request {
     );
 }
 
+sub on_client_received_pubsub_publish {
+    my ($self, $req) = @_;
+    Ocean::Error::ProtocolError->throw(
+        type => Ocean::Constants::StreamErrorType::POLICY_VIOLATION, 
+    );
+}
+
 sub on_client_received_room_message {
     my ($self, $message) = @_;
     Ocean::Error::ProtocolError->throw(

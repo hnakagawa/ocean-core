@@ -18,6 +18,7 @@ use Ocean::HandlerArgs::BindRequest;
 use Ocean::HandlerArgs::SilentDisconnection;
 use Ocean::HandlerArgs::TooManyAuthAttempt;
 use Ocean::HandlerArgs::HTTPAuthRequest;
+use Ocean::HandlerArgs::PubSubEvent;
 use Ocean::HandlerArgs::SASLAuthRequest;
 use Ocean::HandlerArgs::SASLPasswordRequest;
 use Ocean::HandlerArgs::SASLSuccessNotification;
@@ -394,6 +395,28 @@ sub on_stream_handle_message {
 
     $self->{_event_dispatcher}->dispatch(
         Ocean::Constants::EventType::SEND_MESSAGE, 
+        $self->{_context}, $args);
+}
+
+sub on_stream_handle_pubsub_publish {
+    my ($self, $event) = @_;
+
+    my $to_jid = $event->to;
+
+    infof('<Stream:From:%s> @%s { to: %s }', 
+        $event->from,
+        Ocean::Constants::EventType::PUBLISH_EVENT, 
+        $to_jid->node);
+
+    my $args = Ocean::HandlerArgs::PubSubEvent->new({
+        from   => $event->from,     
+        to     => $to_jid,
+        node   => $event->node,
+        items  => $event->items,
+    });
+
+    $self->{_event_dispatcher}->dispatch(
+        Ocean::Constants::EventType::PUBLISH_EVENT, 
         $self->{_context}, $args);
 }
 

@@ -79,6 +79,12 @@ sub on_client_received_disco_items_request {
     $self->{_delegate}->on_protocol_delivered_disco_items($req->id, $items);
 }
 
+sub on_client_received_pubsub_publish {
+    my ($self, $event) = @_;
+    $self->stanza_countup();
+    $self->{_delegate}->on_protocol_handle_pubsub_publish($event);
+}
+
 sub on_client_received_room_service_info_request {
     my ($self, $req) = @_;
     $self->stanza_countup();
